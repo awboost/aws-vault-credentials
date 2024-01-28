@@ -1,4 +1,4 @@
-import { Credentials, Provider } from "@aws-sdk/types";
+import type { Credentials, Provider } from "@aws-sdk/types";
 import { spawn } from "child_process";
 import { joinConcurrentCallers } from "./join-concurrent-callers.js";
 

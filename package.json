@@ -18,8 +18,8 @@
   },
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "default": "./lib/index.js"
+      "types": "./lib/aws-vault-credentials.d.ts",
+      "default": "./lib/aws-vault-credentials.js"
     }
   },
   "files": [

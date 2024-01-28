@@ -1,13 +1,8 @@
 {
-  "[javascript]": {
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "[javascript][typescript]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     }
-  },
-  "[typescript]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    }
-  },
-  "typescript.preferences.importModuleSpecifierEnding": "js"
+  }
 }

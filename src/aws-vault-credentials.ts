@@ -1,7 +1,6 @@
-import { Credentials, Provider } from '@aws-sdk/types';
-import { assert, is, object, optional, string } from '@fmtk/decoders';
-import { spawn } from 'child_process';
-import { joinConcurrentCallers } from './joinConcurrentCallers.js';
+import { Credentials, Provider } from "@aws-sdk/types";
+import { spawn } from "child_process";
+import { joinConcurrentCallers } from "./join-concurrent-callers.js";
 
 export interface AwsVaultCredentialsOptions {
   awsVaultPath?: string;
@@ -20,14 +19,6 @@ interface AwsCredentialInfo {
   SessionToken?: string;
   Version: number;
 }
-
-const decodeAwsCredentialInfo = object<AwsCredentialInfo>({
-  AccessKeyId: string,
-  Expiration: optional(string),
-  SecretAccessKey: string,
-  SessionToken: optional(string),
-  Version: is(1),
-});
 
 export class AwsVaultCredentials {
   public static provide(
@@ -55,53 +46,53 @@ export class AwsVaultCredentials {
 
   private readonly _nosync_callAwsVault =
     async (): Promise<AwsCredentialInfo> => {
-      const args = ['exec', '--json', this.opts.profileName];
+      const args = ["exec", "--json", this.opts.profileName];
 
       if (this.opts.noSession) {
-        args.push('--no-session');
+        args.push("--no-session");
       }
       if (this.opts.prompt) {
-        args.push('--prompt');
+        args.push("--prompt");
         args.push(this.opts.prompt);
       } else if (this.opts.guiPrompt) {
-        if (process.platform === 'darwin') {
-          args.push('--prompt');
-          args.push('osascript');
-        } else if (process.platform === 'win32') {
-          args.push('--prompt');
-          args.push('wincredui');
+        if (process.platform === "darwin") {
+          args.push("--prompt");
+          args.push("osascript");
+        } else if (process.platform === "win32") {
+          args.push("--prompt");
+          args.push("wincredui");
         }
       }
       if (this.opts.durationSeconds) {
-        args.push('--duration');
+        args.push("--duration");
         args.push(`${this.opts.durationSeconds}s`);
       }
 
-      const proc = spawn(this.opts.awsVaultPath ?? 'aws-vault', args, {
-        stdio: ['inherit', 'pipe', 'pipe'],
+      const proc = spawn(this.opts.awsVaultPath ?? "aws-vault", args, {
+        stdio: ["inherit", "pipe", "pipe"],
       });
 
       const stdout: Buffer[] = [];
       const stderr: Buffer[] = [];
 
-      proc.stderr.on('data', (chunk) => {
+      proc.stderr.on("data", (chunk) => {
         // follow the stderr to console so that the MFA prompt still works
         process.stderr.write(chunk);
         stderr.push(chunk);
       });
-      proc.stdout.on('data', (chunk) => stdout.push(chunk));
+      proc.stdout.on("data", (chunk) => stdout.push(chunk));
 
       return new Promise((resolve, reject) => {
-        proc.on('error', reject);
+        proc.on("error", reject);
 
-        proc.on('exit', (code) => {
+        proc.on("exit", (code) => {
           if (code) {
             const err = Buffer.concat(stderr).toString();
             throw new Error(`aws-vault exited with status ${code}: ${err}`);
           }
           try {
             const result = JSON.parse(Buffer.concat(stdout).toString());
-            resolve(assert(decodeAwsCredentialInfo, result));
+            resolve(result);
           } catch (err) {
             throw new Error(`aws-vault returned unexpected output: ${err}`);
           }
